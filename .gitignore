@@ -22,3 +22,9 @@ docs/plugins.md
 docs/plugins/
 docs/install/
 docs/superpowers/
+
+# for plugins/docs-tools/skills/pdf-sg-review/SKILL.md
+plugins/docs-tools/skills/pdf-sg-review/style-guides/
+plugins/docs-tools/skills/pdf-sg-review/chunks/
+plugins/docs-tools/skills/pdf-sg-review/temp/
+plugins/docs-tools/skills/pdf-sg-review/reports/
