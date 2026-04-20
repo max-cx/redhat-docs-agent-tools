@@ -49,7 +49,7 @@ Before starting the review, check if the chunks directory exists and contains fi
 
 1. Run the following command to check for chunk files:
    ```bash
-   ls ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/chunks/ 2>/dev/null | head -1
+   ls ${CLAUDE_SKILL_DIR}/chunks/ 2>/dev/null | head -1
    ```
 
 2. **If chunks exist** (command returns output): Proceed to Phase 1.
@@ -57,7 +57,7 @@ Before starting the review, check if the chunks directory exists and contains fi
 3. **If chunks are missing** (command returns nothing or errors):
 
    a. Inform the user:
-      ```
+      ```text
       No PDF style guide chunks found. I need to set up your style guides first.
       ```
 
@@ -66,7 +66,7 @@ Before starting the review, check if the chunks directory exists and contains fi
       which pdftotext
       ```
       If not installed, tell the user:
-      ```
+      ```text
       The pdftotext command is required but not installed.
       Please install it with: sudo dnf install poppler-utils (Fedora)
       ```
@@ -74,11 +74,11 @@ Before starting the review, check if the chunks directory exists and contains fi
 
    c. Create the style-guides directory and get the full absolute path:
       ```bash
-      mkdir -p ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/style-guides && realpath ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/style-guides/
+      mkdir -p ${CLAUDE_SKILL_DIR}/style-guides && realpath ${CLAUDE_SKILL_DIR}/style-guides/
       ```
 
       CRITICAL: You MUST display the path to the user in this EXACT format (copy the path from the realpath command output):
-      ```
+      ```text
          Open your file manager and copy your PDF style guides to the following directory:
          <PASTE_THE_FULL_PATH_FROM_REALPATH_COMMAND_HERE>
 
@@ -93,12 +93,12 @@ Before starting the review, check if the chunks directory exists and contains fi
 
    e. If user uploaded PDFs, process them:
       ```bash
-      mkdir -p ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/chunks
+      mkdir -p ${CLAUDE_SKILL_DIR}/chunks
       ```
 
       For each PDF file found in the style-guides directory:
       ```bash
-      cd ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/style-guides && for pdf in *.pdf; do
+      cd ${CLAUDE_SKILL_DIR}/style-guides && for pdf in *.pdf; do
         if [[ -f "$pdf" ]]; then
           basename="${pdf%.pdf}"
           echo "Processing $pdf..."
@@ -111,7 +111,7 @@ Before starting the review, check if the chunks directory exists and contains fi
 
    f. Verify chunks were created:
       ```bash
-      ls ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/chunks/ | wc -l
+      ls ${CLAUDE_SKILL_DIR}/chunks/ | wc -l
       ```
       If count is 0, inform the user that no PDFs were found or processing failed, and STOP.
 
@@ -121,11 +121,11 @@ Before starting the review, check if the chunks directory exists and contains fi
 
 1. Create the reports directory if it doesn't exist, then create the main review report file:
    ```bash
-   mkdir -p ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/reports
+   mkdir -p ${CLAUDE_SKILL_DIR}/reports
    ```
 
-   Save the report as `~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/reports/review-<YYYY-MM-DD-hh:mm:ss>.md` with the header:
-   ```
+   Save the report as `${CLAUDE_SKILL_DIR}/reports/review-<YYYY-MM-DD-hh:mm:ss>.md` with the header:
+   ```text
    AI review report
    (Do not use preview to read this report unless your previews are set to a monospace font.)
 
@@ -135,32 +135,29 @@ Before starting the review, check if the chunks directory exists and contains fi
    **Subject:** <commit subject>
    ```
 
-2. List all chunk files in `plugins/docs-tools/skills/pdf-sg-review/chunks/` directory and its subdirectories:
-   ```
-   ls ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/chunks/
+2. List all chunk files in `plugins/docs-tools/skills/pdf-sg-review/chunks/` directory:
+   ```bash
+   ls ${CLAUDE_SKILL_DIR}/chunks/
    ```
    Store the list of chunk filenames for spawning agents.
 
 3. Create the temporary directory if it doesn't exist:
    ```bash
-   mkdir -p ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/temp
+   mkdir -p ${CLAUDE_SKILL_DIR}/temp
    ```
 
-4. Retrieve the commit diff content and save it to a temporary file:
-   ```
-   ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/temp/commit-diff.txt
-   ```
+4. Retrieve the commit diff content and save it to a temporary file with the following path and file name: `${CLAUDE_SKILL_DIR}/temp/commit-diff.txt`
 
 ### Phase 2: Parallel Analysis
 
 Launch parallel agents using the Task tool - one agent per chunk file found in Phase 1. Each agent receives:
 
 **Agent Prompt Template:**
-```
+```text
 You are analyzing documentation content for style guide violations.
 
-1. Read the chunk file: ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/chunks/<CHUNK_FILENAME>
-2. Read the commit diff: ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/temp/commit-diff.txt
+1. Read the chunk file: ${CLAUDE_SKILL_DIR}/chunks/<CHUNK_FILENAME>
+2. Read the commit diff: ${CLAUDE_SKILL_DIR}/temp/commit-diff.txt
 
 3. Analyze every sentence in the commit diff against ALL rules in your assigned chunk.
 
@@ -209,7 +206,7 @@ After all parallel agents complete:
 
 4. Clean up temporary files:
    ```bash
-   rm -rf ~/redhat-docs-agent-tools/plugins/docs-tools/skills/pdf-sg-review/temp
+   rm -rf ${CLAUDE_SKILL_DIR}/temp
    ```
 
 ## Review Report Format
